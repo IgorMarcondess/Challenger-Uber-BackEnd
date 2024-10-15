@@ -4,8 +4,11 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.model.*;
 import com.marcondez.email_service.adapters.EmailSenderGateway;
+import com.marcondez.email_service.core.exceptions.EmailServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class SesEmailSender implements EmailSenderGateway {
 
     private final AmazonSimpleEmailService amazonSimpleEmailService;
@@ -20,10 +23,13 @@ public class SesEmailSender implements EmailSenderGateway {
 
         //Fazendo o request para a Amazon
         SendEmailRequest request = new SendEmailRequest()
+
                 //Quem está enviando o e-mail
                 .withSource("igorpmarcondes1@gmail.com")
+
                 //Quem vai receber o e-mail
                 .withDestination(new Destination().withToAddresses(to))
+
                 //Qual a mensagem (Assunto e corpo)
                 .withMessage(new Message()
                         .withSubject(new Content(subject))
@@ -32,7 +38,8 @@ public class SesEmailSender implements EmailSenderGateway {
         try {
            this.amazonSimpleEmailService.sendEmail(request);
         } catch (AmazonServiceException exception){
-            throw new EmailServiceException("Erro");
+            // Passando a causa do erro no objeto "exception"
+            throw new EmailServiceException("Ocorreu um erro ao enviar o e-mail", exception);
         }
     }
 }
